@@ -6,7 +6,7 @@
 <title>ระบบเจ้าหน้าที่ · ค้นหาคำร้อง</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -93,7 +93,7 @@
   <div class="footer-note">สภาวิชาชีพสังคมสงเคราะห์ · ระบบภายในสำหรับเจ้าหน้าที่</div>
 </main>
 
-<script src="assets/config.js"></script>
+<script src="config.js"></script>
 <script>
 const loginCard = document.getElementById('loginCard');
 const searchCard = document.getElementById('searchCard');
@@ -126,7 +126,7 @@ function showMsg(el, text, ok) {
 
 function checkConfigured() {
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PASTE_YOUR') !== -1) {
-    showMsg(loginMsg, 'ยังไม่ได้ตั้งค่า APPS_SCRIPT_URL ใน assets/config.js', false);
+    showMsg(loginMsg, 'ยังไม่ได้ตั้งค่า APPS_SCRIPT_URL ใน config.js', false);
     return false;
   }
   return true;
