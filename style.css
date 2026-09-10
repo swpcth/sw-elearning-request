@@ -29,6 +29,16 @@ header.site {
   text-align: center;
 }
 
+header.site .site-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background: #fff;
+  padding: 4px;
+}
+
 header.site h1 {
   margin: 0 0 4px;
   font-size: 22px;

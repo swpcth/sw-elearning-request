@@ -11,6 +11,7 @@
 <body>
 
 <header class="site">
+  <img src="logo.png" alt="ตราสภาวิชาชีพสังคมสงเคราะห์" class="site-logo">
   <h1>ระบบเจ้าหน้าที่</h1>
   <p>ค้นหาและตรวจสอบคำร้องขอนำหน่วยคะแนน E-Learning มาใช้ทดแทน</p>
 </header>
@@ -55,8 +56,8 @@
           <tr>
             <th>วันที่ยื่น</th>
             <th>ชื่อ-นามสกุล</th>
+            <th>เลขประจำตัวประชาชน</th>
             <th>เลขที่ใบอนุญาต</th>
-            <th>หน่วยคะแนน</th>
             <th>สถานะ</th>
           </tr>
         </thead>
@@ -217,8 +218,8 @@ function renderResults(items) {
     tr.innerHTML =
       '<td>' + (item.timestamp || '') + '</td>' +
       '<td>' + item.prefix + ' ' + item.firstName + ' ' + item.lastName + '</td>' +
+      '<td>' + (item.nationalId || '') + '</td>' +
       '<td>' + (item.licenseNo || '') + '</td>' +
-      '<td>' + (item.points || '') + '</td>' +
       '<td>' + statusBadge(item.status || 'รอดำเนินการ') + '</td>';
     tr.addEventListener('click', () => openDetail(item));
     resultsBody.appendChild(tr);
@@ -227,14 +228,16 @@ function renderResults(items) {
 
 function openDetail(item) {
   selectedId = item.id;
+  const addressLine = [item.addressDetail, item.subdistrict, item.district, item.province]
+    .filter(Boolean).join(' ') + (item.postalCode ? ' ' + item.postalCode : '');
   detailContent.innerHTML =
     '<p><strong>เลขที่คำร้อง:</strong> <span class="req-id">' + item.id + '</span></p>' +
     '<p><strong>ชื่อ-นามสกุล:</strong> ' + item.prefix + ' ' + item.firstName + ' ' + item.lastName + '</p>' +
+    '<p><strong>เลขประจำตัวประชาชน:</strong> ' + (item.nationalId || '-') + '</p>' +
     '<p><strong>เลขที่ใบอนุญาต:</strong> ' + (item.licenseNo || '-') + '</p>' +
     '<p><strong>วันที่ออก / หมดอายุ:</strong> ' + (item.issueDate || '-') + ' / ' + (item.expiryDate || '-') + '</p>' +
-    '<p><strong>ที่อยู่:</strong> ' + (item.address || '-') + '</p>' +
+    '<p><strong>ที่อยู่:</strong> ' + (addressLine.trim() || '-') + '</p>' +
     '<p><strong>โทรศัพท์ / อีเมล:</strong> ' + (item.phone || '-') + ' / ' + (item.email || '-') + '</p>' +
-    '<p><strong>จำนวนหน่วยคะแนนที่ขอ:</strong> ' + (item.points || '-') + '</p>' +
     '<p><strong>วันที่ยื่นคำร้อง:</strong> ' + (item.timestamp || '-') + '</p>';
   statusSelect.value = item.status || 'รอดำเนินการ';
   staffNoteInput.value = item.staffNote || '';

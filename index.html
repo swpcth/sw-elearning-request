@@ -11,6 +11,7 @@
 <body>
 
 <header class="site">
+  <img src="logo.png" alt="ตราสภาวิชาชีพสังคมสงเคราะห์" class="site-logo">
   <h1>สภาวิชาชีพสังคมสงเคราะห์</h1>
   <p>คำร้องขอนำหน่วยคะแนนกิจกรรม E-Learning มาใช้ทดแทนหน่วยคะแนนการศึกษาต่อเนื่อง</p>
 </header>
@@ -25,14 +26,18 @@
 
         <div class="field">
           <label>คำนำหน้า <span class="req">*</span></label>
-          <select name="prefix" required>
+          <select name="prefix" id="prefixSelect" required>
             <option value="">-- เลือก --</option>
             <option value="นาย">นาย</option>
             <option value="นาง">นาง</option>
             <option value="นางสาว">นางสาว</option>
+            <option value="อื่นๆ">อื่น ๆ (ระบุ)</option>
           </select>
         </div>
-        <div class="field"></div>
+        <div class="field" id="prefixOtherField" style="display:none;">
+          <label>ระบุคำนำหน้า <span class="req">*</span></label>
+          <input type="text" id="prefixOtherInput" placeholder="ระบุคำนำหน้า">
+        </div>
 
         <div class="field">
           <label>ชื่อ <span class="req">*</span></label>
@@ -41,6 +46,12 @@
         <div class="field">
           <label>นามสกุล <span class="req">*</span></label>
           <input type="text" name="lastName" required autocomplete="family-name">
+        </div>
+
+        <div class="field full">
+          <label>เลขประจำตัวประชาชน <span class="req">*</span></label>
+          <input type="text" name="nationalId" inputmode="numeric" pattern="[0-9]{13}" maxlength="13"
+                 placeholder="กรอกตัวเลข 13 หลัก ไม่ต้องมีขีด" required>
         </div>
 
         <div class="field full">
@@ -58,8 +69,32 @@
         </div>
 
         <div class="field full">
-          <label>ที่อยู่ที่ติดต่อได้</label>
-          <textarea name="address"></textarea>
+          <label>ที่อยู่ที่ติดต่อได้ (บ้านเลขที่ / หมู่ / ซอย / ถนน)</label>
+          <input type="text" name="addressDetail" placeholder="เช่น 123/45 หมู่ 6 ซอยสุขใจ ถนนพหลโยธิน">
+        </div>
+
+        <div class="field">
+          <label>จังหวัด <span class="req">*</span></label>
+          <select id="provinceSelect" required>
+            <option value="">-- เลือกจังหวัด --</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>อำเภอ/เขต <span class="req">*</span></label>
+          <select id="districtSelect" required disabled>
+            <option value="">-- เลือกจังหวัดก่อน --</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>ตำบล/แขวง <span class="req">*</span></label>
+          <select id="subdistrictSelect" required disabled>
+            <option value="">-- เลือกอำเภอ/เขตก่อน --</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>รหัสไปรษณีย์</label>
+          <input type="text" id="postalCodeInput" readonly placeholder="เลือกตำบล/แขวงก่อน">
         </div>
 
         <div class="field">
@@ -67,8 +102,8 @@
           <input type="tel" name="phone" required>
         </div>
         <div class="field">
-          <label>อีเมล</label>
-          <input type="email" name="email">
+          <label>อีเมล <span class="req">*</span></label>
+          <input type="email" name="email" required>
         </div>
 
       </div>
@@ -82,11 +117,6 @@
         มีความประสงค์ขอนำหน่วยคะแนนที่ได้จากการศึกษาหาความรู้เพิ่มเติมด้วยตนเองผ่านเทคโนโลยีสารสนเทศ (E-Learning) ในปัจจุบัน
         มาใช้ทดแทน/สะสมหน่วยคะแนนการศึกษาต่อเนื่องในช่วงระยะเวลาที่ถือครองใบอนุญาตที่เก็บได้ไม่ครบตามหลักเกณฑ์ที่กำหนด
       </p>
-
-      <div class="field">
-        <label>จำนวนหน่วยคะแนนที่ขอนำมาใช้ทดแทน/สะสม <span class="req">*</span></label>
-        <input type="number" name="points" min="0" step="1" required>
-      </div>
 
       <div class="checkline">
         <input type="checkbox" id="confirm" required>
@@ -114,11 +144,100 @@ const form = document.getElementById('requestForm');
 const msgBox = document.getElementById('msgBox');
 const submitBtn = document.getElementById('submitBtn');
 
+const prefixSelect = document.getElementById('prefixSelect');
+const prefixOtherField = document.getElementById('prefixOtherField');
+const prefixOtherInput = document.getElementById('prefixOtherInput');
+
+const provinceSelect = document.getElementById('provinceSelect');
+const districtSelect = document.getElementById('districtSelect');
+const subdistrictSelect = document.getElementById('subdistrictSelect');
+const postalCodeInput = document.getElementById('postalCodeInput');
+
+let addressData = { provinces: [], districts: [], subdistricts: [] };
+
 function showMsg(text, ok) {
   msgBox.textContent = text;
   msgBox.className = 'msg show ' + (ok ? 'ok' : 'err');
 }
 
+// ---- คำนำหน้า "อื่น ๆ" ----
+prefixSelect.addEventListener('change', () => {
+  const isOther = prefixSelect.value === 'อื่นๆ';
+  prefixOtherField.style.display = isOther ? 'block' : 'none';
+  prefixOtherInput.required = isOther;
+  if (!isOther) prefixOtherInput.value = '';
+});
+
+// ---- โหลดข้อมูล จังหวัด/อำเภอ/ตำบล ----
+async function loadAddressData() {
+  try {
+    const res = await fetch('thai-address.json');
+    addressData = await res.json();
+    const sorted = [...addressData.provinces].sort((a, b) => a.n.localeCompare(b.n, 'th'));
+    sorted.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.c;
+      opt.textContent = p.n;
+      provinceSelect.appendChild(opt);
+    });
+  } catch (err) {
+    showMsg('โหลดข้อมูลจังหวัด/อำเภอ/ตำบลไม่สำเร็จ กรุณารีเฟรชหน้าเว็บ (' + err.message + ')', false);
+  }
+}
+loadAddressData();
+
+provinceSelect.addEventListener('change', () => {
+  const pCode = Number(provinceSelect.value);
+  districtSelect.innerHTML = '<option value="">-- เลือกอำเภอ/เขต --</option>';
+  subdistrictSelect.innerHTML = '<option value="">-- เลือกอำเภอ/เขตก่อน --</option>';
+  postalCodeInput.value = '';
+
+  if (!pCode) {
+    districtSelect.disabled = true;
+    subdistrictSelect.disabled = true;
+    return;
+  }
+  const list = addressData.districts
+    .filter(d => d.p === pCode)
+    .sort((a, b) => a.n.localeCompare(b.n, 'th'));
+  list.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d.c;
+    opt.textContent = d.n;
+    districtSelect.appendChild(opt);
+  });
+  districtSelect.disabled = false;
+  subdistrictSelect.disabled = true;
+});
+
+districtSelect.addEventListener('change', () => {
+  const dCode = Number(districtSelect.value);
+  subdistrictSelect.innerHTML = '<option value="">-- เลือกตำบล/แขวง --</option>';
+  postalCodeInput.value = '';
+
+  if (!dCode) {
+    subdistrictSelect.disabled = true;
+    return;
+  }
+  const list = addressData.subdistricts
+    .filter(s => s.d === dCode)
+    .sort((a, b) => a.n.localeCompare(b.n, 'th'));
+  list.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.c;
+    opt.textContent = s.n;
+    subdistrictSelect.appendChild(opt);
+  });
+  subdistrictSelect.disabled = false;
+});
+
+subdistrictSelect.addEventListener('change', () => {
+  const sCode = Number(subdistrictSelect.value);
+  const found = addressData.subdistricts.find(s => s.c === sCode);
+  postalCodeInput.value = found ? found.z : '';
+});
+
+// ---- ส่งฟอร์ม ----
 form.addEventListener('submit', async function (e) {
   e.preventDefault();
 
@@ -128,6 +247,23 @@ form.addEventListener('submit', async function (e) {
   }
 
   const data = Object.fromEntries(new FormData(form).entries());
+
+  // คำนำหน้า
+  if (data.prefix === 'อื่นๆ') {
+    data.prefix = prefixOtherInput.value.trim();
+  }
+
+  // ที่อยู่แบบเลือกจังหวัด/อำเภอ/ตำบล
+  data.province = provinceSelect.options[provinceSelect.selectedIndex]?.textContent || '';
+  data.district = districtSelect.options[districtSelect.selectedIndex]?.textContent || '';
+  data.subdistrict = subdistrictSelect.options[subdistrictSelect.selectedIndex]?.textContent || '';
+  data.postalCode = postalCodeInput.value || '';
+
+  if (!provinceSelect.value || !districtSelect.value || !subdistrictSelect.value) {
+    showMsg('กรุณาเลือก จังหวัด / อำเภอ / ตำบล ให้ครบถ้วน', false);
+    return;
+  }
+
   data.action = 'submit';
 
   submitBtn.disabled = true;
@@ -144,6 +280,12 @@ form.addEventListener('submit', async function (e) {
     if (result.success) {
       showMsg('ยื่นคำร้องสำเร็จ เลขที่คำร้องของท่านคือ ' + result.id + ' กรุณาเก็บไว้เพื่ออ้างอิง', true);
       form.reset();
+      prefixOtherField.style.display = 'none';
+      districtSelect.innerHTML = '<option value="">-- เลือกจังหวัดก่อน --</option>';
+      districtSelect.disabled = true;
+      subdistrictSelect.innerHTML = '<option value="">-- เลือกอำเภอ/เขตก่อน --</option>';
+      subdistrictSelect.disabled = true;
+      postalCodeInput.value = '';
     } else {
       showMsg('เกิดข้อผิดพลาด: ' + (result.error || 'ไม่ทราบสาเหตุ'), false);
     }
