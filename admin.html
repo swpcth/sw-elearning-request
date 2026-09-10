@@ -182,7 +182,8 @@ function openDetail(item) {
     '<p><strong>ชื่อ-นามสกุล:</strong> ' + item.prefix + ' ' + item.firstName + ' ' + item.lastName + '</p>' +
     '<p><strong>เลขประจำตัวประชาชน:</strong> ' + (item.nationalId || '-') + '</p>' +
     '<p><strong>เลขที่ใบอนุญาต:</strong> ' + (item.licenseNo || '-') + '</p>' +
-    '<p><strong>วันที่ออก / หมดอายุ (พ.ศ.):</strong> ' + (item.issueDate || '-') + ' / ' + (item.expiryDate || '-') + '</p>' +
+    '<p><strong>วันที่ออกใบอนุญาต (พ.ศ.):</strong> ' + (item.issueDate || '-') + '</p>' +
+    '<p><strong>วันที่หมดอายุ (พ.ศ.):</strong> ' + (item.expiryDate || '-') + '</p>' +
     '<p><strong>ที่อยู่:</strong> ' + (addressLine.trim() || '-') + '</p>' +
     '<p><strong>โทรศัพท์ / อีเมล:</strong> ' + (item.phone || '-') + ' / ' + (item.email || '-') + '</p>' +
     '<p><strong>วันที่ยื่นคำร้อง:</strong> ' + (item.timestamp || '-') + '</p>';
