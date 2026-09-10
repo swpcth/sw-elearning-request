@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบเจ้าหน้าที่ · ค้นหาคำร้อง</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="site">
+  <h1>ระบบเจ้าหน้าที่</h1>
+  <p>ค้นหาและตรวจสอบคำร้องขอนำหน่วยคะแนน E-Learning มาใช้ทดแทน</p>
+</header>
+
+<main>
+
+  <!-- Login card -->
+  <div class="card" id="loginCard">
+    <h2>เข้าสู่ระบบเจ้าหน้าที่</h2>
+    <div class="field">
+      <label>รหัสผ่านเจ้าหน้าที่</label>
+      <input type="password" id="pinInput" autocomplete="off">
+    </div>
+    <div class="actions">
+      <button class="btn-primary" id="loginBtn">เข้าสู่ระบบ</button>
+    </div>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <!-- Search card (hidden until logged in) -->
+  <div class="card hidden" id="searchCard">
+    <h2>ค้นหาผู้ยื่นคำร้อง</h2>
+    <div class="grid">
+      <div class="field full">
+        <label>ค้นหาจากชื่อ หรือ นามสกุล (พิมพ์บางส่วนก็ได้)</label>
+        <input type="text" id="searchInput" placeholder="เช่น สมชาย หรือ ใจดี">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" id="searchBtn">ค้นหา</button>
+      <button class="btn-secondary" id="logoutBtn">ออกจากระบบ</button>
+    </div>
+    <div class="msg" id="searchMsg"></div>
+  </div>
+
+  <!-- Results card -->
+  <div class="card hidden" id="resultsCard">
+    <h2>ผลการค้นหา (<span id="resultCount">0</span> รายการ)</h2>
+    <div style="overflow-x:auto;">
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>วันที่ยื่น</th>
+            <th>ชื่อ-นามสกุล</th>
+            <th>เลขที่ใบอนุญาต</th>
+            <th>หน่วยคะแนน</th>
+            <th>สถานะ</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+
+    <div class="detail-panel hidden" id="detailPanel">
+      <h2 style="border:none; padding:0; margin-bottom:10px;">รายละเอียดคำร้อง</h2>
+      <div id="detailContent" style="font-size:14px;"></div>
+
+      <div class="grid" style="margin-top:14px;">
+        <div class="field">
+          <label>เปลี่ยนสถานะ</label>
+          <select id="statusSelect">
+            <option value="รอดำเนินการ">รอดำเนินการ</option>
+            <option value="อนุมัติ">อนุมัติ</option>
+            <option value="ไม่อนุมัติ">ไม่อนุมัติ</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>หมายเหตุเจ้าหน้าที่</label>
+          <input type="text" id="staffNoteInput">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn-primary btn-small" id="saveStatusBtn">บันทึกผลการพิจารณา</button>
+        <button class="btn-secondary btn-small" id="closeDetailBtn">ปิด</button>
+      </div>
+      <div class="msg" id="detailMsg"></div>
+    </div>
+  </div>
+
+  <div class="footer-note">สภาวิชาชีพสังคมสงเคราะห์ · ระบบภายในสำหรับเจ้าหน้าที่</div>
+</main>
+
+<script src="assets/config.js"></script>
+<script>
+const loginCard = document.getElementById('loginCard');
+const searchCard = document.getElementById('searchCard');
+const resultsCard = document.getElementById('resultsCard');
+const pinInput = document.getElementById('pinInput');
+const loginBtn = document.getElementById('loginBtn');
+const loginMsg = document.getElementById('loginMsg');
+const searchInput = document.getElementById('searchInput');
+const searchBtn = document.getElementById('searchBtn');
+const searchMsg = document.getElementById('searchMsg');
+const resultsBody = document.getElementById('resultsBody');
+const resultCount = document.getElementById('resultCount');
+const detailPanel = document.getElementById('detailPanel');
+const detailContent = document.getElementById('detailContent');
+const statusSelect = document.getElementById('statusSelect');
+const staffNoteInput = document.getElementById('staffNoteInput');
+const saveStatusBtn = document.getElementById('saveStatusBtn');
+const closeDetailBtn = document.getElementById('closeDetailBtn');
+const detailMsg = document.getElementById('detailMsg');
+const logoutBtn = document.getElementById('logoutBtn');
+
+let PIN = '';
+let currentResults = [];
+let selectedId = null;
+
+function showMsg(el, text, ok) {
+  el.textContent = text;
+  el.className = 'msg show ' + (ok ? 'ok' : 'err');
+}
+
+function checkConfigured() {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PASTE_YOUR') !== -1) {
+    showMsg(loginMsg, 'ยังไม่ได้ตั้งค่า APPS_SCRIPT_URL ใน assets/config.js', false);
+    return false;
+  }
+  return true;
+}
+
+async function callApi(payload) {
+  const res = await fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
+
+loginBtn.addEventListener('click', async () => {
+  if (!checkConfigured()) return;
+  const pin = pinInput.value.trim();
+  if (!pin) { showMsg(loginMsg, 'กรุณากรอกรหัสผ่าน', false); return; }
+
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'กำลังตรวจสอบ...';
+  try {
+    const result = await callApi({ action: 'login', pin });
+    if (result.success) {
+      PIN = pin;
+      sessionStorage.setItem('sw_admin_pin', pin);
+      loginCard.classList.add('hidden');
+      searchCard.classList.remove('hidden');
+    } else {
+      showMsg(loginMsg, 'รหัสผ่านไม่ถูกต้อง', false);
+    }
+  } catch (err) {
+    showMsg(loginMsg, 'เกิดข้อผิดพลาด: ' + err.message, false);
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'เข้าสู่ระบบ';
+  }
+});
+
+logoutBtn.addEventListener('click', () => {
+  PIN = '';
+  sessionStorage.removeItem('sw_admin_pin');
+  searchCard.classList.add('hidden');
+  resultsCard.classList.add('hidden');
+  loginCard.classList.remove('hidden');
+  pinInput.value = '';
+});
+
+searchBtn.addEventListener('click', doSearch);
+searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
+
+async function doSearch() {
+  const q = searchInput.value.trim();
+  searchBtn.disabled = true;
+  searchBtn.textContent = 'กำลังค้นหา...';
+  detailPanel.classList.add('hidden');
+  try {
+    const result = await callApi({ action: 'search', pin: PIN, q });
+    if (!result.success) {
+      showMsg(searchMsg, result.error || 'ค้นหาไม่สำเร็จ', false);
+      return;
+    }
+    currentResults = result.items || [];
+    renderResults(currentResults);
+    resultsCard.classList.remove('hidden');
+    searchMsg.className = 'msg';
+  } catch (err) {
+    showMsg(searchMsg, 'เกิดข้อผิดพลาด: ' + err.message, false);
+  } finally {
+    searchBtn.disabled = false;
+    searchBtn.textContent = 'ค้นหา';
+  }
+}
+
+function statusBadge(status) {
+  let cls = 'pending';
+  if (status === 'อนุมัติ') cls = 'approved';
+  if (status === 'ไม่อนุมัติ') cls = 'rejected';
+  return '<span class="badge ' + cls + '">' + status + '</span>';
+}
+
+function renderResults(items) {
+  resultCount.textContent = items.length;
+  resultsBody.innerHTML = '';
+  items.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.className = 'clickable';
+    tr.innerHTML =
+      '<td>' + (item.timestamp || '') + '</td>' +
+      '<td>' + item.prefix + ' ' + item.firstName + ' ' + item.lastName + '</td>' +
+      '<td>' + (item.licenseNo || '') + '</td>' +
+      '<td>' + (item.points || '') + '</td>' +
+      '<td>' + statusBadge(item.status || 'รอดำเนินการ') + '</td>';
+    tr.addEventListener('click', () => openDetail(item));
+    resultsBody.appendChild(tr);
+  });
+}
+
+function openDetail(item) {
+  selectedId = item.id;
+  detailContent.innerHTML =
+    '<p><strong>เลขที่คำร้อง:</strong> <span class="req-id">' + item.id + '</span></p>' +
+    '<p><strong>ชื่อ-นามสกุล:</strong> ' + item.prefix + ' ' + item.firstName + ' ' + item.lastName + '</p>' +
+    '<p><strong>เลขที่ใบอนุญาต:</strong> ' + (item.licenseNo || '-') + '</p>' +
+    '<p><strong>วันที่ออก / หมดอายุ:</strong> ' + (item.issueDate || '-') + ' / ' + (item.expiryDate || '-') + '</p>' +
+    '<p><strong>ที่อยู่:</strong> ' + (item.address || '-') + '</p>' +
+    '<p><strong>โทรศัพท์ / อีเมล:</strong> ' + (item.phone || '-') + ' / ' + (item.email || '-') + '</p>' +
+    '<p><strong>จำนวนหน่วยคะแนนที่ขอ:</strong> ' + (item.points || '-') + '</p>' +
+    '<p><strong>วันที่ยื่นคำร้อง:</strong> ' + (item.timestamp || '-') + '</p>';
+  statusSelect.value = item.status || 'รอดำเนินการ';
+  staffNoteInput.value = item.staffNote || '';
+  detailPanel.classList.remove('hidden');
+  detailMsg.className = 'msg';
+}
+
+closeDetailBtn.addEventListener('click', () => detailPanel.classList.add('hidden'));
+
+saveStatusBtn.addEventListener('click', async () => {
+  if (!selectedId) return;
+  saveStatusBtn.disabled = true;
+  saveStatusBtn.textContent = 'กำลังบันทึก...';
+  try {
+    const result = await callApi({
+      action: 'updateStatus',
+      pin: PIN,
+      id: selectedId,
+      status: statusSelect.value,
+      staffNote: staffNoteInput.value
+    });
+    if (result.success) {
+      showMsg(detailMsg, 'บันทึกผลการพิจารณาเรียบร้อยแล้ว', true);
+      const idx = currentResults.findIndex(r => r.id === selectedId);
+      if (idx !== -1) {
+        currentResults[idx].status = statusSelect.value;
+        currentResults[idx].staffNote = staffNoteInput.value;
+        renderResults(currentResults);
+      }
+    } else {
+      showMsg(detailMsg, result.error || 'บันทึกไม่สำเร็จ', false);
+    }
+  } catch (err) {
+    showMsg(detailMsg, 'เกิดข้อผิดพลาด: ' + err.message, false);
+  } finally {
+    saveStatusBtn.disabled = false;
+    saveStatusBtn.textContent = 'บันทึกผลการพิจารณา';
+  }
+});
+
+// Restore session if pin already verified this tab
+const savedPin = sessionStorage.getItem('sw_admin_pin');
+if (savedPin) {
+  PIN = savedPin;
+  loginCard.classList.add('hidden');
+  searchCard.classList.remove('hidden');
+}
+</script>
+
+</body>
+</html>

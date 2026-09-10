@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>คำร้องขอนำหน่วยคะแนน E-Learning มาใช้ทดแทน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="site">
+  <h1>สภาวิชาชีพสังคมสงเคราะห์</h1>
+  <p>คำร้องขอนำหน่วยคะแนนกิจกรรม E-Learning มาใช้ทดแทนหน่วยคะแนนการศึกษาต่อเนื่อง</p>
+</header>
+
+<main>
+
+  <form id="requestForm">
+
+    <div class="card">
+      <h2>ข้อมูลผู้ยื่นคำร้อง</h2>
+      <div class="grid">
+
+        <div class="field">
+          <label>คำนำหน้า <span class="req">*</span></label>
+          <select name="prefix" required>
+            <option value="">-- เลือก --</option>
+            <option value="นาย">นาย</option>
+            <option value="นาง">นาง</option>
+            <option value="นางสาว">นางสาว</option>
+          </select>
+        </div>
+        <div class="field"></div>
+
+        <div class="field">
+          <label>ชื่อ <span class="req">*</span></label>
+          <input type="text" name="firstName" required autocomplete="given-name">
+        </div>
+        <div class="field">
+          <label>นามสกุล <span class="req">*</span></label>
+          <input type="text" name="lastName" required autocomplete="family-name">
+        </div>
+
+        <div class="field full">
+          <label>เลขที่ใบอนุญาตประกอบวิชาชีพสังคมสงเคราะห์รับอนุญาต <span class="req">*</span></label>
+          <input type="text" name="licenseNo" required>
+        </div>
+
+        <div class="field">
+          <label>วันที่ออกใบอนุญาต</label>
+          <input type="date" name="issueDate">
+        </div>
+        <div class="field">
+          <label>วันที่หมดอายุ</label>
+          <input type="date" name="expiryDate">
+        </div>
+
+        <div class="field full">
+          <label>ที่อยู่ที่ติดต่อได้</label>
+          <textarea name="address"></textarea>
+        </div>
+
+        <div class="field">
+          <label>โทรศัพท์ <span class="req">*</span></label>
+          <input type="tel" name="phone" required>
+        </div>
+        <div class="field">
+          <label>อีเมล</label>
+          <input type="email" name="email">
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>รายละเอียดคำร้อง</h2>
+      <p style="font-size:14px; color:var(--muted); margin-top:-4px;">
+        อ้างถึงข้อ ๓.๓ ของประกาศสภาวิชาชีพสังคมสงเคราะห์ เรื่อง หลักเกณฑ์ วิธีการ และเงื่อนไขในการกำหนดคุณสมบัติของผู้ขอต่ออายุใบอนุญาต
+        หลักเกณฑ์การศึกษาต่อเนื่อง วิธีการเก็บหน่วยคะแนนเพื่อการต่ออายุเป็นผู้ประกอบวิชาชีพสังคมสงเคราะห์รับอนุญาต
+        มีความประสงค์ขอนำหน่วยคะแนนที่ได้จากการศึกษาหาความรู้เพิ่มเติมด้วยตนเองผ่านเทคโนโลยีสารสนเทศ (E-Learning) ในปัจจุบัน
+        มาใช้ทดแทน/สะสมหน่วยคะแนนการศึกษาต่อเนื่องในช่วงระยะเวลาที่ถือครองใบอนุญาตที่เก็บได้ไม่ครบตามหลักเกณฑ์ที่กำหนด
+      </p>
+
+      <div class="field">
+        <label>จำนวนหน่วยคะแนนที่ขอนำมาใช้ทดแทน/สะสม <span class="req">*</span></label>
+        <input type="number" name="points" min="0" step="1" required>
+      </div>
+
+      <div class="checkline">
+        <input type="checkbox" id="confirm" required>
+        <label for="confirm" style="margin:0;">
+          ข้าพเจ้าขอรับรองว่าข้อความข้างต้นเป็นความจริงทุกประการ หากตรวจสอบพบว่าไม่เป็นความจริง
+          ข้าพเจ้ายินยอมให้สภาวิชาชีพสังคมสงเคราะห์เพิกถอนการรับรองหน่วยคะแนนดังกล่าว
+        </label>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn-primary" id="submitBtn">ยื่นคำร้อง</button>
+      </div>
+
+      <div class="msg" id="msgBox"></div>
+    </div>
+
+  </form>
+
+  <div class="footer-note">สภาวิชาชีพสังคมสงเคราะห์ · แบบฟอร์มออนไลน์</div>
+</main>
+
+<script src="assets/config.js"></script>
+<script>
+const form = document.getElementById('requestForm');
+const msgBox = document.getElementById('msgBox');
+const submitBtn = document.getElementById('submitBtn');
+
+function showMsg(text, ok) {
+  msgBox.textContent = text;
+  msgBox.className = 'msg show ' + (ok ? 'ok' : 'err');
+}
+
+form.addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PASTE_YOUR') !== -1) {
+    showMsg('ยังไม่ได้ตั้งค่า APPS_SCRIPT_URL ใน assets/config.js กรุณาติดต่อผู้ดูแลระบบ', false);
+    return;
+  }
+
+  const data = Object.fromEntries(new FormData(form).entries());
+  data.action = 'submit';
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'กำลังส่งคำร้อง...';
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+
+    if (result.success) {
+      showMsg('ยื่นคำร้องสำเร็จ เลขที่คำร้องของท่านคือ ' + result.id + ' กรุณาเก็บไว้เพื่ออ้างอิง', true);
+      form.reset();
+    } else {
+      showMsg('เกิดข้อผิดพลาด: ' + (result.error || 'ไม่ทราบสาเหตุ'), false);
+    }
+  } catch (err) {
+    showMsg('ไม่สามารถส่งคำร้องได้ กรุณาลองใหม่อีกครั้ง (' + err.message + ')', false);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'ยื่นคำร้อง';
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,229 @@
+:root {
+  --navy: #0b3c73;
+  --red: #c8342a;
+  --blue: #2b7bb9;
+  --bg: #f4f6f9;
+  --card: #ffffff;
+  --border: #d9dee5;
+  --text: #1f2a37;
+  --muted: #6b7684;
+  --ok: #1a7f4b;
+  --warn: #b4790a;
+  --danger: #c8342a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Sarabun", "TH Sarabun New", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+header.site {
+  background: linear-gradient(135deg, var(--navy), var(--blue));
+  color: #fff;
+  padding: 28px 20px;
+  text-align: center;
+}
+
+header.site h1 {
+  margin: 0 0 4px;
+  font-size: 22px;
+}
+
+header.site p {
+  margin: 0;
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+main {
+  max-width: 760px;
+  margin: -24px auto 40px;
+  padding: 0 16px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: 0 6px 20px rgba(11, 60, 115, 0.08);
+  margin-bottom: 20px;
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 18px;
+  color: var(--navy);
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+}
+
+.grid .full { grid-column: 1 / -1; }
+
+@media (max-width: 560px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: var(--muted);
+}
+
+label .req { color: var(--red); }
+
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+input[type="date"],
+input[type="number"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 15px;
+  background: #fff;
+  color: var(--text);
+}
+
+textarea { resize: vertical; min-height: 70px; }
+
+.field { margin-bottom: 4px; }
+
+.checkline {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+.checkline input { margin-top: 4px; }
+
+button {
+  font-family: inherit;
+  font-size: 15px;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 22px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: var(--navy);
+  color: #fff;
+}
+
+.btn-primary:hover { background: #0a2f5a; }
+
+.btn-secondary {
+  background: #eef1f5;
+  color: var(--navy);
+  border: 1px solid var(--border);
+}
+
+.btn-small {
+  padding: 7px 14px;
+  font-size: 13px;
+}
+
+.actions { margin-top: 20px; display: flex; gap: 10px; }
+
+.msg {
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-top: 16px;
+  display: none;
+}
+
+.msg.show { display: block; }
+.msg.ok { background: #e6f4ea; color: var(--ok); border: 1px solid #b7dfc4; }
+.msg.err { background: #fdecea; color: var(--danger); border: 1px solid #f3c2bd; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th, td {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: #eef2f7;
+  color: var(--navy);
+  font-weight: 600;
+}
+
+tr.clickable { cursor: pointer; }
+tr.clickable:hover { background: #f7f9fc; }
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge.pending { background: #fdf3dc; color: var(--warn); }
+.badge.approved { background: #e6f4ea; color: var(--ok); }
+.badge.rejected { background: #fdecea; color: var(--danger); }
+
+.hidden { display: none !important; }
+
+.detail-panel {
+  border-top: 2px solid var(--border);
+  margin-top: 14px;
+  padding-top: 14px;
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ccc;
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: -3px;
+  margin-right: 6px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.footer-note {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 24px 0 8px;
+}
+
+.req-id {
+  font-family: monospace;
+  background: #eef2f7;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
