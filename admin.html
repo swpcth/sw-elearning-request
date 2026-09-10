@@ -18,31 +18,17 @@
 
 <main>
 
-  <!-- Login card -->
-  <div class="card" id="loginCard">
-    <h2>เข้าสู่ระบบเจ้าหน้าที่</h2>
-    <div class="field">
-      <label>รหัสผ่านเจ้าหน้าที่</label>
-      <input type="password" id="pinInput" autocomplete="off">
-    </div>
-    <div class="actions">
-      <button class="btn-primary" id="loginBtn">เข้าสู่ระบบ</button>
-    </div>
-    <div class="msg" id="loginMsg"></div>
-  </div>
-
-  <!-- Search card (hidden until logged in) -->
-  <div class="card hidden" id="searchCard">
+  <!-- Search card -->
+  <div class="card" id="searchCard">
     <h2>ค้นหาผู้ยื่นคำร้อง</h2>
     <div class="grid">
       <div class="field full">
-        <label>ค้นหาจากชื่อ หรือ นามสกุล (พิมพ์บางส่วนก็ได้)</label>
-        <input type="text" id="searchInput" placeholder="เช่น สมชาย หรือ ใจดี">
+        <label>ค้นหาจากชื่อ, นามสกุล หรือเลขที่ใบอนุญาต (พิมพ์บางส่วนก็ได้)</label>
+        <input type="text" id="searchInput" placeholder="เช่น สมชาย, ใจดี หรือ 0101">
       </div>
     </div>
     <div class="actions">
       <button class="btn-primary" id="searchBtn">ค้นหา</button>
-      <button class="btn-secondary" id="logoutBtn">ออกจากระบบ</button>
     </div>
     <div class="msg" id="searchMsg"></div>
   </div>
@@ -96,12 +82,8 @@
 
 <script src="config.js"></script>
 <script>
-const loginCard = document.getElementById('loginCard');
 const searchCard = document.getElementById('searchCard');
 const resultsCard = document.getElementById('resultsCard');
-const pinInput = document.getElementById('pinInput');
-const loginBtn = document.getElementById('loginBtn');
-const loginMsg = document.getElementById('loginMsg');
 const searchInput = document.getElementById('searchInput');
 const searchBtn = document.getElementById('searchBtn');
 const searchMsg = document.getElementById('searchMsg');
@@ -114,9 +96,7 @@ const staffNoteInput = document.getElementById('staffNoteInput');
 const saveStatusBtn = document.getElementById('saveStatusBtn');
 const closeDetailBtn = document.getElementById('closeDetailBtn');
 const detailMsg = document.getElementById('detailMsg');
-const logoutBtn = document.getElementById('logoutBtn');
 
-let PIN = '';
 let currentResults = [];
 let selectedId = null;
 
@@ -127,7 +107,7 @@ function showMsg(el, text, ok) {
 
 function checkConfigured() {
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PASTE_YOUR') !== -1) {
-    showMsg(loginMsg, 'ยังไม่ได้ตั้งค่า APPS_SCRIPT_URL ใน config.js', false);
+    showMsg(searchMsg, 'ยังไม่ได้ตั้งค่า APPS_SCRIPT_URL ใน config.js', false);
     return false;
   }
   return true;
@@ -142,50 +122,17 @@ async function callApi(payload) {
   return res.json();
 }
 
-loginBtn.addEventListener('click', async () => {
-  if (!checkConfigured()) return;
-  const pin = pinInput.value.trim();
-  if (!pin) { showMsg(loginMsg, 'กรุณากรอกรหัสผ่าน', false); return; }
-
-  loginBtn.disabled = true;
-  loginBtn.textContent = 'กำลังตรวจสอบ...';
-  try {
-    const result = await callApi({ action: 'login', pin });
-    if (result.success) {
-      PIN = pin;
-      sessionStorage.setItem('sw_admin_pin', pin);
-      loginCard.classList.add('hidden');
-      searchCard.classList.remove('hidden');
-    } else {
-      showMsg(loginMsg, 'รหัสผ่านไม่ถูกต้อง', false);
-    }
-  } catch (err) {
-    showMsg(loginMsg, 'เกิดข้อผิดพลาด: ' + err.message, false);
-  } finally {
-    loginBtn.disabled = false;
-    loginBtn.textContent = 'เข้าสู่ระบบ';
-  }
-});
-
-logoutBtn.addEventListener('click', () => {
-  PIN = '';
-  sessionStorage.removeItem('sw_admin_pin');
-  searchCard.classList.add('hidden');
-  resultsCard.classList.add('hidden');
-  loginCard.classList.remove('hidden');
-  pinInput.value = '';
-});
-
 searchBtn.addEventListener('click', doSearch);
 searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
 
 async function doSearch() {
+  if (!checkConfigured()) return;
   const q = searchInput.value.trim();
   searchBtn.disabled = true;
   searchBtn.textContent = 'กำลังค้นหา...';
   detailPanel.classList.add('hidden');
   try {
-    const result = await callApi({ action: 'search', pin: PIN, q });
+    const result = await callApi({ action: 'search', q });
     if (!result.success) {
       showMsg(searchMsg, result.error || 'ค้นหาไม่สำเร็จ', false);
       return;
@@ -235,7 +182,7 @@ function openDetail(item) {
     '<p><strong>ชื่อ-นามสกุล:</strong> ' + item.prefix + ' ' + item.firstName + ' ' + item.lastName + '</p>' +
     '<p><strong>เลขประจำตัวประชาชน:</strong> ' + (item.nationalId || '-') + '</p>' +
     '<p><strong>เลขที่ใบอนุญาต:</strong> ' + (item.licenseNo || '-') + '</p>' +
-    '<p><strong>วันที่ออก / หมดอายุ:</strong> ' + (item.issueDate || '-') + ' / ' + (item.expiryDate || '-') + '</p>' +
+    '<p><strong>วันที่ออก / หมดอายุ (พ.ศ.):</strong> ' + (item.issueDate || '-') + ' / ' + (item.expiryDate || '-') + '</p>' +
     '<p><strong>ที่อยู่:</strong> ' + (addressLine.trim() || '-') + '</p>' +
     '<p><strong>โทรศัพท์ / อีเมล:</strong> ' + (item.phone || '-') + ' / ' + (item.email || '-') + '</p>' +
     '<p><strong>วันที่ยื่นคำร้อง:</strong> ' + (item.timestamp || '-') + '</p>';
@@ -254,7 +201,6 @@ saveStatusBtn.addEventListener('click', async () => {
   try {
     const result = await callApi({
       action: 'updateStatus',
-      pin: PIN,
       id: selectedId,
       status: statusSelect.value,
       staffNote: staffNoteInput.value
@@ -277,14 +223,6 @@ saveStatusBtn.addEventListener('click', async () => {
     saveStatusBtn.textContent = 'บันทึกผลการพิจารณา';
   }
 });
-
-// Restore session if pin already verified this tab
-const savedPin = sessionStorage.getItem('sw_admin_pin');
-if (savedPin) {
-  PIN = savedPin;
-  loginCard.classList.add('hidden');
-  searchCard.classList.remove('hidden');
-}
 </script>
 
 </body>

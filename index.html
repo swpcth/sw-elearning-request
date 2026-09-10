@@ -56,16 +56,24 @@
 
         <div class="field full">
           <label>เลขที่ใบอนุญาตประกอบวิชาชีพสังคมสงเคราะห์รับอนุญาต <span class="req">*</span></label>
-          <input type="text" name="licenseNo" required>
+          <input type="text" name="licenseNo" placeholder="เช่น 0101 (ใส่เลข 0 นำหน้าได้)" required>
         </div>
 
-        <div class="field">
-          <label>วันที่ออกใบอนุญาต</label>
-          <input type="date" name="issueDate">
+        <div class="field full">
+          <label>วันที่ออกใบอนุญาต (พ.ศ.)</label>
+          <div class="date-be-group">
+            <select id="issueDay"><option value="">วัน</option></select>
+            <select id="issueMonth"><option value="">เดือน</option></select>
+            <select id="issueYear"><option value="">ปี พ.ศ.</option></select>
+          </div>
         </div>
-        <div class="field">
-          <label>วันที่หมดอายุ</label>
-          <input type="date" name="expiryDate">
+        <div class="field full">
+          <label>วันที่หมดอายุ (พ.ศ.)</label>
+          <div class="date-be-group">
+            <select id="expiryDay"><option value="">วัน</option></select>
+            <select id="expiryMonth"><option value="">เดือน</option></select>
+            <select id="expiryYear"><option value="">ปี พ.ศ.</option></select>
+          </div>
         </div>
 
         <div class="field full">
@@ -152,6 +160,43 @@ const provinceSelect = document.getElementById('provinceSelect');
 const districtSelect = document.getElementById('districtSelect');
 const subdistrictSelect = document.getElementById('subdistrictSelect');
 const postalCodeInput = document.getElementById('postalCodeInput');
+
+const issueDay = document.getElementById('issueDay');
+const issueMonth = document.getElementById('issueMonth');
+const issueYear = document.getElementById('issueYear');
+const expiryDay = document.getElementById('expiryDay');
+const expiryMonth = document.getElementById('expiryMonth');
+const expiryYear = document.getElementById('expiryYear');
+
+const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+                     'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+function fillOptions(select, items, toValueLabel) {
+  items.forEach(item => {
+    const [value, label] = toValueLabel(item);
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = label;
+    select.appendChild(opt);
+  });
+}
+
+function setupDateDropdowns(daySel, monthSel, yearSel) {
+  fillOptions(daySel, Array.from({ length: 31 }, (_, i) => i + 1), d => [d, d]);
+  fillOptions(monthSel, THAI_MONTHS, (m, i) => [THAI_MONTHS.indexOf(m) + 1, m]);
+  const currentBEYear = new Date().getFullYear() + 543;
+  const years = Array.from({ length: 102 }, (_, i) => currentBEYear + 1 - i); // ปีปัจจุบัน+1 ถึงย้อนหลัง 100 ปี
+  fillOptions(yearSel, years, y => [y, y]);
+}
+setupDateDropdowns(issueDay, issueMonth, issueYear);
+setupDateDropdowns(expiryDay, expiryMonth, expiryYear);
+
+function buildBEDate(daySel, monthSel, yearSel) {
+  if (!daySel.value || !monthSel.value || !yearSel.value) return '';
+  const d = String(daySel.value).padStart(2, '0');
+  const m = String(monthSel.value).padStart(2, '0');
+  return d + '/' + m + '/' + yearSel.value; // dd/mm/yyyy (พ.ศ.)
+}
 
 let addressData = { provinces: [], districts: [], subdistricts: [] };
 
@@ -252,6 +297,10 @@ form.addEventListener('submit', async function (e) {
   if (data.prefix === 'อื่นๆ') {
     data.prefix = prefixOtherInput.value.trim();
   }
+
+  // วันที่ออก/หมดอายุใบอนุญาต แบบ พ.ศ. (dd/mm/yyyy)
+  data.issueDate = buildBEDate(issueDay, issueMonth, issueYear);
+  data.expiryDate = buildBEDate(expiryDay, expiryMonth, expiryYear);
 
   // ที่อยู่แบบเลือกจังหวัด/อำเภอ/ตำบล
   data.province = provinceSelect.options[provinceSelect.selectedIndex]?.textContent || '';

@@ -116,6 +116,16 @@ textarea { resize: vertical; min-height: 70px; }
 
 .field { margin-bottom: 4px; }
 
+.date-be-group {
+  display: flex;
+  gap: 8px;
+}
+
+.date-be-group select {
+  flex: 1;
+  min-width: 0;
+}
+
 .checkline {
   display: flex;
   align-items: flex-start;
