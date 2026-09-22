@@ -27,6 +27,20 @@ header.site {
   color: #fff;
   padding: 28px 20px;
   text-align: center;
+  position: relative;
+}
+
+.form-code {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 6px;
+  padding: 4px 10px;
 }
 
 header.site .site-logo {
@@ -246,4 +260,169 @@ tr.clickable:hover { background: #f7f9fc; }
   background: #eef2f7;
   padding: 2px 8px;
   border-radius: 6px;
+}
+
+/* ---------- แผงยืนยันการยื่นคำร้องสำเร็จ ---------- */
+.success-panel {
+  display: none;
+  text-align: center;
+  padding: 8px 4px 4px;
+}
+
+.success-panel.show { display: block; }
+
+.success-panel .success-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--ok);
+  color: #fff;
+  font-size: 30px;
+  line-height: 56px;
+  margin: 0 auto 14px;
+}
+
+.success-panel h3 {
+  margin: 0 0 6px;
+  color: var(--ok);
+  font-size: 19px;
+}
+
+.success-panel p {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.success-panel .success-id-box {
+  display: inline-block;
+  background: #eef2f7;
+  border: 1px dashed var(--navy);
+  border-radius: 10px;
+  padding: 10px 22px;
+  margin-bottom: 18px;
+}
+
+.success-panel .success-id-box span {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.success-panel .success-id-box strong {
+  font-family: monospace;
+  font-size: 22px;
+  color: var(--navy);
+  letter-spacing: 0.5px;
+}
+
+.success-panel .actions {
+  justify-content: center;
+}
+
+/* ---------- ใบยืนยันคำร้องแบบพิมพ์ / บันทึก PDF ---------- */
+#printReceipt { display: none; }
+
+.receipt-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px;
+  position: relative;
+  color: #000;
+}
+
+.receipt-page .form-code {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: 1px solid #000;
+  color: #000;
+}
+
+.receipt-header {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.receipt-header img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  margin-bottom: 6px;
+}
+
+.receipt-header h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.receipt-header p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.receipt-id-box {
+  text-align: center;
+  border: 1px dashed #000;
+  border-radius: 8px;
+  padding: 8px 16px;
+  margin: 16px auto;
+  max-width: 320px;
+}
+
+.receipt-id-box span {
+  display: block;
+  font-size: 12px;
+}
+
+.receipt-id-box strong {
+  font-family: monospace;
+  font-size: 20px;
+}
+
+.receipt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.receipt-table th, .receipt-table td {
+  border: 1px solid #666;
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.receipt-table th {
+  width: 38%;
+  background: #f0f0f0;
+}
+
+.receipt-note {
+  font-size: 12px;
+  margin-top: 14px;
+}
+
+.receipt-sign {
+  margin-top: 46px;
+  text-align: right;
+  font-size: 13px;
+}
+
+.receipt-sign .line {
+  margin-bottom: 6px;
+}
+
+body.printing > *:not(#printReceipt) {
+  display: none !important;
+}
+
+body.printing #printReceipt {
+  display: block !important;
+}
+
+@media print {
+  @page { margin: 14mm; }
 }
