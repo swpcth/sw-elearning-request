@@ -11,9 +11,10 @@
 <body>
 
 <header class="site">
+  <div class="form-code">สวชส.18</div>
   <img src="logo.png" alt="ตราสภาวิชาชีพสังคมสงเคราะห์" class="site-logo">
   <h1>สภาวิชาชีพสังคมสงเคราะห์</h1>
-  <p>คำร้องขอนำหน่วยคะแนนกิจกรรม E-Learning ในปัจจุบัน มาใช้ทดแทนหน่วยคะแนนการศึกษาต่อเนื่องในช่วงระยะเวลาที่ถือครองใบอนุญาตที่เก็บได้ไม่ครบตามหลักเกณฑ์ที่กำหนด</p>
+  <p>คำร้องขอนำหน่วยคะแนนกิจกรรม E-Learning มาใช้ทดแทนหน่วยคะแนนการศึกษาต่อเนื่อง</p>
 </header>
 
 <main>
@@ -120,7 +121,7 @@
     <div class="card">
       <h2>รายละเอียดคำร้อง</h2>
       <p style="font-size:14px; color:var(--muted); margin-top:-4px;">
-        อ้างถึงข้อ 3.3 ของประกาศสภาวิชาชีพสังคมสงเคราะห์ เรื่อง หลักเกณฑ์ วิธีการ และเงื่อนไขในการกำหนดคุณสมบัติของผู้ขอต่ออายุใบอนุญาต
+        อ้างถึงข้อ ๓.๓ ของประกาศสภาวิชาชีพสังคมสงเคราะห์ เรื่อง หลักเกณฑ์ วิธีการ และเงื่อนไขในการกำหนดคุณสมบัติของผู้ขอต่ออายุใบอนุญาต
         หลักเกณฑ์การศึกษาต่อเนื่อง วิธีการเก็บหน่วยคะแนนเพื่อการต่ออายุเป็นผู้ประกอบวิชาชีพสังคมสงเคราะห์รับอนุญาต
         มีความประสงค์ขอนำหน่วยคะแนนที่ได้จากการศึกษาหาความรู้เพิ่มเติมด้วยตนเองผ่านเทคโนโลยีสารสนเทศ (E-Learning) ในปัจจุบัน
         มาใช้ทดแทน/สะสมหน่วยคะแนนการศึกษาต่อเนื่องในช่วงระยะเวลาที่ถือครองใบอนุญาตที่เก็บได้ไม่ครบตามหลักเกณฑ์ที่กำหนด
@@ -143,14 +144,47 @@
 
   </form>
 
+  <div class="card success-panel" id="successPanel">
+    <div class="success-icon">✓</div>
+    <h3>ยื่นคำร้องสำเร็จ</h3>
+    <p>ระบบได้บันทึกคำร้องของท่านเรียบร้อยแล้ว สถานะปัจจุบันคือ "รอดำเนินการ" กรุณาเก็บเลขที่คำร้องไว้เพื่ออ้างอิง</p>
+    <div class="success-id-box">
+      <span>เลขที่คำร้อง</span>
+      <strong id="successIdText">-</strong>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn-primary" id="downloadPdfBtn">ดาวน์โหลด PDF</button>
+      <button type="button" class="btn-secondary" id="newRequestBtn">ยื่นคำร้องใหม่</button>
+    </div>
+  </div>
+
   <div class="footer-note">สภาวิชาชีพสังคมสงเคราะห์ · แบบฟอร์มออนไลน์</div>
 </main>
+
+<div id="printReceipt"></div>
 
 <script src="config.js"></script>
 <script>
 const form = document.getElementById('requestForm');
 const msgBox = document.getElementById('msgBox');
 const submitBtn = document.getElementById('submitBtn');
+
+const successPanel = document.getElementById('successPanel');
+const successIdText = document.getElementById('successIdText');
+const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+const newRequestBtn = document.getElementById('newRequestBtn');
+const printReceipt = document.getElementById('printReceipt');
+
+let lastSubmission = null; // { id, data, submittedAt } ของคำร้องล่าสุดที่ยื่นสำเร็จ
+
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 const prefixSelect = document.getElementById('prefixSelect');
 const prefixOtherField = document.getElementById('prefixOtherField');
@@ -282,6 +316,80 @@ subdistrictSelect.addEventListener('change', () => {
   postalCodeInput.value = found ? found.z : '';
 });
 
+// ---- ใบยืนยันคำร้องสำหรับพิมพ์ / บันทึกเป็น PDF ----
+function buildReceiptHtml(id, data) {
+  const now = new Date();
+  const day = now.getDate();
+  const month = THAI_MONTHS[now.getMonth()];
+  const year = now.getFullYear() + 543;
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const submittedStr = day + ' ' + month + ' ' + year + ' เวลา ' + hh + ':' + mm + ' น.';
+
+  const fullName = [data.prefix, data.firstName, data.lastName].filter(Boolean).join(' ');
+  const addressLine = [data.addressDetail, data.subdistrict, data.district, data.province]
+    .filter(Boolean).join(' ') + (data.postalCode ? ' ' + data.postalCode : '');
+
+  return '' +
+    '<div class="receipt-page">' +
+      '<div class="form-code">สวชส.18</div>' +
+      '<div class="receipt-header">' +
+        '<img src="logo.png" alt="ตราสภาวิชาชีพสังคมสงเคราะห์">' +
+        '<h2>สภาวิชาชีพสังคมสงเคราะห์</h2>' +
+        '<p>คำร้องขอนำหน่วยคะแนนกิจกรรม E-Learning มาใช้ทดแทนหน่วยคะแนนการศึกษาต่อเนื่อง</p>' +
+      '</div>' +
+      '<div class="receipt-id-box">' +
+        '<span>เลขที่คำร้อง</span>' +
+        '<strong>' + escapeHtml(id) + '</strong>' +
+      '</div>' +
+      '<table class="receipt-table">' +
+        '<tr><th>ชื่อ-นามสกุล</th><td>' + escapeHtml(fullName || '-') + '</td></tr>' +
+        '<tr><th>เลขประจำตัวประชาชน</th><td>' + escapeHtml(data.nationalId || '-') + '</td></tr>' +
+        '<tr><th>เลขที่ใบอนุญาต</th><td>' + escapeHtml(data.licenseNo || '-') + '</td></tr>' +
+        '<tr><th>วันที่ออกใบอนุญาต (พ.ศ.)</th><td>' + escapeHtml(data.issueDate || '-') + '</td></tr>' +
+        '<tr><th>วันที่หมดอายุ (พ.ศ.)</th><td>' + escapeHtml(data.expiryDate || '-') + '</td></tr>' +
+        '<tr><th>ที่อยู่</th><td>' + escapeHtml(addressLine.trim() || '-') + '</td></tr>' +
+        '<tr><th>โทรศัพท์</th><td>' + escapeHtml(data.phone || '-') + '</td></tr>' +
+        '<tr><th>อีเมล</th><td>' + escapeHtml(data.email || '-') + '</td></tr>' +
+        '<tr><th>สถานะคำร้อง</th><td>รอดำเนินการ</td></tr>' +
+        '<tr><th>วันที่ยื่นคำร้อง</th><td>' + escapeHtml(submittedStr) + '</td></tr>' +
+      '</table>' +
+      '<p class="receipt-note">เอกสารนี้เป็นหลักฐานการยื่นคำร้องผ่านระบบออนไลน์ กรุณาเก็บไว้เพื่ออ้างอิง</p>' +
+      '<div class="receipt-sign">' +
+        '<div class="line">ลงชื่อ .......................................................... ผู้ยื่นคำร้อง</div>' +
+        '<div>(' + escapeHtml(fullName || '..........................................') + ')</div>' +
+      '</div>' +
+    '</div>';
+}
+
+function downloadPdf() {
+  if (!lastSubmission) return;
+  printReceipt.innerHTML = buildReceiptHtml(lastSubmission.id, lastSubmission.data);
+  document.body.classList.add('printing');
+  window.print();
+}
+
+window.addEventListener('afterprint', () => {
+  document.body.classList.remove('printing');
+});
+
+downloadPdfBtn.addEventListener('click', downloadPdf);
+
+newRequestBtn.addEventListener('click', () => {
+  lastSubmission = null;
+  successPanel.classList.remove('show');
+  form.classList.remove('hidden');
+  form.reset();
+  prefixOtherField.style.display = 'none';
+  districtSelect.innerHTML = '<option value="">-- เลือกจังหวัดก่อน --</option>';
+  districtSelect.disabled = true;
+  subdistrictSelect.innerHTML = '<option value="">-- เลือกอำเภอ/เขตก่อน --</option>';
+  subdistrictSelect.disabled = true;
+  postalCodeInput.value = '';
+  msgBox.className = 'msg';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
 // ---- ส่งฟอร์ม ----
 form.addEventListener('submit', async function (e) {
   e.preventDefault();
@@ -327,14 +435,12 @@ form.addEventListener('submit', async function (e) {
     const result = await res.json();
 
     if (result.success) {
-      showMsg('ยื่นคำร้องสำเร็จ เลขที่คำร้องของท่านคือ ' + result.id + ' กรุณาเก็บไว้เพื่ออ้างอิง', true);
-      form.reset();
-      prefixOtherField.style.display = 'none';
-      districtSelect.innerHTML = '<option value="">-- เลือกจังหวัดก่อน --</option>';
-      districtSelect.disabled = true;
-      subdistrictSelect.innerHTML = '<option value="">-- เลือกอำเภอ/เขตก่อน --</option>';
-      subdistrictSelect.disabled = true;
-      postalCodeInput.value = '';
+      lastSubmission = { id: result.id, data: data };
+      successIdText.textContent = result.id;
+      msgBox.className = 'msg';
+      form.classList.add('hidden');
+      successPanel.classList.add('show');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       showMsg('เกิดข้อผิดพลาด: ' + (result.error || 'ไม่ทราบสาเหตุ'), false);
     }
