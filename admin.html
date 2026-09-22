@@ -203,8 +203,6 @@ function renderResults(items) {
 
 function openDetail(item) {
   selectedId = item.id;
-  const addressLine = [item.addressDetail, item.subdistrict, item.district, item.province]
-    .filter(Boolean).join(' ') + (item.postalCode ? ' ' + item.postalCode : '');
   detailContent.innerHTML =
     '<p><strong>เลขที่คำร้อง:</strong> <span class="req-id">' + escapeHtml(item.id) + '</span></p>' +
     '<p><strong>ชื่อ-นามสกุล:</strong> ' + escapeHtml([item.prefix, item.firstName, item.lastName].filter(Boolean).join(' ')) + '</p>' +
@@ -212,7 +210,6 @@ function openDetail(item) {
     '<p><strong>เลขที่ใบอนุญาต:</strong> ' + escapeHtml(item.licenseNo || '-') + '</p>' +
     '<p><strong>วันที่ออกใบอนุญาต (พ.ศ.):</strong> ' + escapeHtml(item.issueDate || '-') + '</p>' +
     '<p><strong>วันที่หมดอายุ (พ.ศ.):</strong> ' + escapeHtml(item.expiryDate || '-') + '</p>' +
-    '<p><strong>ที่อยู่:</strong> ' + escapeHtml(addressLine.trim() || '-') + '</p>' +
     '<p><strong>โทรศัพท์ / อีเมล:</strong> ' + escapeHtml(item.phone || '-') + ' / ' + escapeHtml(item.email || '-') + '</p>' +
     '<p><strong>วันที่ยื่นคำร้อง:</strong> ' + escapeHtml(item.timestamp || '-') + '</p>';
   statusSelect.value = item.status || 'รอดำเนินการ';
