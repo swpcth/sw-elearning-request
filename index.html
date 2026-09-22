@@ -342,18 +342,18 @@ function buildReceiptHtml(id, data) {
         '<span>เลขที่คำร้อง</span>' +
         '<strong>' + escapeHtml(id) + '</strong>' +
       '</div>' +
-      '<table class="receipt-table">' +
-        '<tr><th>ชื่อ-นามสกุล</th><td>' + escapeHtml(fullName || '-') + '</td></tr>' +
-        '<tr><th>เลขประจำตัวประชาชน</th><td>' + escapeHtml(data.nationalId || '-') + '</td></tr>' +
-        '<tr><th>เลขที่ใบอนุญาต</th><td>' + escapeHtml(data.licenseNo || '-') + '</td></tr>' +
-        '<tr><th>วันที่ออกใบอนุญาต (พ.ศ.)</th><td>' + escapeHtml(data.issueDate || '-') + '</td></tr>' +
-        '<tr><th>วันที่หมดอายุ (พ.ศ.)</th><td>' + escapeHtml(data.expiryDate || '-') + '</td></tr>' +
-        '<tr><th>ที่อยู่</th><td>' + escapeHtml(addressLine.trim() || '-') + '</td></tr>' +
-        '<tr><th>โทรศัพท์</th><td>' + escapeHtml(data.phone || '-') + '</td></tr>' +
-        '<tr><th>อีเมล</th><td>' + escapeHtml(data.email || '-') + '</td></tr>' +
-        '<tr><th>สถานะคำร้อง</th><td>รอดำเนินการ</td></tr>' +
-        '<tr><th>วันที่ยื่นคำร้อง</th><td>' + escapeHtml(submittedStr) + '</td></tr>' +
-      '</table>' +
+      '<div class="receipt-fields">' +
+        '<div class="receipt-row"><span class="rlabel">ชื่อ-นามสกุล</span><span class="rvalue">' + escapeHtml(fullName || '-') + '</span></div>' +
+        '<div class="receipt-row"><span class="rlabel">เลขประจำตัวประชาชน</span><span class="rvalue">' + escapeHtml(data.nationalId || '-') + '</span></div>' +
+        '<div class="receipt-row"><span class="rlabel">เลขที่ใบอนุญาต</span><span class="rvalue">' + escapeHtml(data.licenseNo || '-') + '</span></div>' +
+        '<div class="receipt-row"><span class="rlabel">วันที่ออกใบอนุญาต (พ.ศ.)</span><span class="rvalue">' + escapeHtml(data.issueDate || '-') + '</span></div>' +
+        '<div class="receipt-row"><span class="rlabel">วันที่หมดอายุ (พ.ศ.)</span><span class="rvalue">' + escapeHtml(data.expiryDate || '-') + '</span></div>' +
+        '<div class="receipt-row"><span class="rlabel">ที่อยู่</span><span class="rvalue">' + escapeHtml(addressLine.trim() || '-') + '</span></div>' +
+        '<div class="receipt-row"><span class="rlabel">โทรศัพท์</span><span class="rvalue">' + escapeHtml(data.phone || '-') + '</span></div>' +
+        '<div class="receipt-row"><span class="rlabel">อีเมล</span><span class="rvalue">' + escapeHtml(data.email || '-') + '</span></div>' +
+        '<div class="receipt-row"><span class="rlabel">สถานะคำร้อง</span><span class="rvalue">รอดำเนินการ</span></div>' +
+        '<div class="receipt-row"><span class="rlabel">วันที่ยื่นคำร้อง</span><span class="rvalue">' + escapeHtml(submittedStr) + '</span></div>' +
+      '</div>' +
       '<p class="receipt-note">เอกสารนี้เป็นหลักฐานการยื่นคำร้องผ่านระบบออนไลน์ กรุณาเก็บไว้เพื่ออ้างอิง</p>' +
       '<div class="receipt-sign">' +
         '<div class="line">ลงชื่อ .......................................................... ผู้ยื่นคำร้อง</div>' +
