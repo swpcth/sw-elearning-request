@@ -14,7 +14,7 @@
   <div class="form-code">สวชส.18</div>
   <img src="logo.png" alt="ตราสภาวิชาชีพสังคมสงเคราะห์" class="site-logo">
   <h1>สภาวิชาชีพสังคมสงเคราะห์</h1>
-  <p>คำร้องขอนำหน่วยคะแนนกิจกรรม E-Learning มาใช้ทดแทนหน่วยคะแนนการศึกษาต่อเนื่อง</p>
+  <p>คำร้องขอนำหน่วยคะแนนกิจกรรม E-Learning หลังจากใบอนุญาตหมดอายุแล้ว มาใช้ทดแทนหน่วยคะแนนการศึกษาต่อเนื่อง</p>
 </header>
 
 <main>
@@ -77,35 +77,6 @@
           </div>
         </div>
 
-        <div class="field full">
-          <label>ที่อยู่ที่ติดต่อได้ (บ้านเลขที่ / หมู่ / ซอย / ถนน)</label>
-          <input type="text" name="addressDetail" placeholder="เช่น 123/45 หมู่ 6 ซอยสุขใจ ถนนพหลโยธิน">
-        </div>
-
-        <div class="field">
-          <label>จังหวัด <span class="req">*</span></label>
-          <select id="provinceSelect" required>
-            <option value="">-- เลือกจังหวัด --</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>อำเภอ/เขต <span class="req">*</span></label>
-          <select id="districtSelect" required disabled>
-            <option value="">-- เลือกจังหวัดก่อน --</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>ตำบล/แขวง <span class="req">*</span></label>
-          <select id="subdistrictSelect" required disabled>
-            <option value="">-- เลือกอำเภอ/เขตก่อน --</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>รหัสไปรษณีย์</label>
-          <input type="text" id="postalCodeInput" readonly placeholder="เลือกตำบล/แขวงก่อน">
-        </div>
-
         <div class="field">
           <label>โทรศัพท์ <span class="req">*</span></label>
           <input type="tel" name="phone" required>
@@ -121,7 +92,7 @@
     <div class="card">
       <h2>รายละเอียดคำร้อง</h2>
       <p style="font-size:14px; color:var(--muted); margin-top:-4px;">
-        อ้างถึงข้อ ๓.๓ ของประกาศสภาวิชาชีพสังคมสงเคราะห์ เรื่อง หลักเกณฑ์ วิธีการ และเงื่อนไขในการกำหนดคุณสมบัติของผู้ขอต่ออายุใบอนุญาต
+        อ้างถึงข้อ 3.3 ของประกาศสภาวิชาชีพสังคมสงเคราะห์ เรื่อง หลักเกณฑ์ วิธีการ และเงื่อนไขในการกำหนดคุณสมบัติของผู้ขอต่ออายุใบอนุญาต
         หลักเกณฑ์การศึกษาต่อเนื่อง วิธีการเก็บหน่วยคะแนนเพื่อการต่ออายุเป็นผู้ประกอบวิชาชีพสังคมสงเคราะห์รับอนุญาต
         มีความประสงค์ขอนำหน่วยคะแนนที่ได้จากการศึกษาหาความรู้เพิ่มเติมด้วยตนเองผ่านเทคโนโลยีสารสนเทศ (E-Learning) หลังจากใบอนุญาตหมดอายุแล้ว
         มาใช้ทดแทน/สะสมหน่วยคะแนนการศึกษาต่อเนื่องในช่วงระยะเวลาที่ถือครองใบอนุญาตที่เก็บได้ไม่ครบตามหลักเกณฑ์ที่กำหนด
@@ -190,11 +161,6 @@ const prefixSelect = document.getElementById('prefixSelect');
 const prefixOtherField = document.getElementById('prefixOtherField');
 const prefixOtherInput = document.getElementById('prefixOtherInput');
 
-const provinceSelect = document.getElementById('provinceSelect');
-const districtSelect = document.getElementById('districtSelect');
-const subdistrictSelect = document.getElementById('subdistrictSelect');
-const postalCodeInput = document.getElementById('postalCodeInput');
-
 const issueDay = document.getElementById('issueDay');
 const issueMonth = document.getElementById('issueMonth');
 const issueYear = document.getElementById('issueYear');
@@ -232,8 +198,6 @@ function buildBEDate(daySel, monthSel, yearSel) {
   return d + '/' + m + '/' + yearSel.value; // dd/mm/yyyy (พ.ศ.)
 }
 
-let addressData = { provinces: [], districts: [], subdistricts: [] };
-
 function showMsg(text, ok) {
   msgBox.textContent = text;
   msgBox.className = 'msg show ' + (ok ? 'ok' : 'err');
@@ -247,75 +211,6 @@ prefixSelect.addEventListener('change', () => {
   if (!isOther) prefixOtherInput.value = '';
 });
 
-// ---- โหลดข้อมูล จังหวัด/อำเภอ/ตำบล ----
-async function loadAddressData() {
-  try {
-    const res = await fetch('thai-address.json');
-    addressData = await res.json();
-    const sorted = [...addressData.provinces].sort((a, b) => a.n.localeCompare(b.n, 'th'));
-    sorted.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p.c;
-      opt.textContent = p.n;
-      provinceSelect.appendChild(opt);
-    });
-  } catch (err) {
-    showMsg('โหลดข้อมูลจังหวัด/อำเภอ/ตำบลไม่สำเร็จ กรุณารีเฟรชหน้าเว็บ (' + err.message + ')', false);
-  }
-}
-loadAddressData();
-
-provinceSelect.addEventListener('change', () => {
-  const pCode = Number(provinceSelect.value);
-  districtSelect.innerHTML = '<option value="">-- เลือกอำเภอ/เขต --</option>';
-  subdistrictSelect.innerHTML = '<option value="">-- เลือกอำเภอ/เขตก่อน --</option>';
-  postalCodeInput.value = '';
-
-  if (!pCode) {
-    districtSelect.disabled = true;
-    subdistrictSelect.disabled = true;
-    return;
-  }
-  const list = addressData.districts
-    .filter(d => d.p === pCode)
-    .sort((a, b) => a.n.localeCompare(b.n, 'th'));
-  list.forEach(d => {
-    const opt = document.createElement('option');
-    opt.value = d.c;
-    opt.textContent = d.n;
-    districtSelect.appendChild(opt);
-  });
-  districtSelect.disabled = false;
-  subdistrictSelect.disabled = true;
-});
-
-districtSelect.addEventListener('change', () => {
-  const dCode = Number(districtSelect.value);
-  subdistrictSelect.innerHTML = '<option value="">-- เลือกตำบล/แขวง --</option>';
-  postalCodeInput.value = '';
-
-  if (!dCode) {
-    subdistrictSelect.disabled = true;
-    return;
-  }
-  const list = addressData.subdistricts
-    .filter(s => s.d === dCode)
-    .sort((a, b) => a.n.localeCompare(b.n, 'th'));
-  list.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.c;
-    opt.textContent = s.n;
-    subdistrictSelect.appendChild(opt);
-  });
-  subdistrictSelect.disabled = false;
-});
-
-subdistrictSelect.addEventListener('change', () => {
-  const sCode = Number(subdistrictSelect.value);
-  const found = addressData.subdistricts.find(s => s.c === sCode);
-  postalCodeInput.value = found ? found.z : '';
-});
-
 // ---- ใบยืนยันคำร้องสำหรับพิมพ์ / บันทึกเป็น PDF ----
 function buildReceiptHtml(id, data) {
   const now = new Date();
@@ -327,8 +222,6 @@ function buildReceiptHtml(id, data) {
   const submittedStr = day + ' ' + month + ' ' + year + ' เวลา ' + hh + ':' + mm + ' น.';
 
   const fullName = [data.prefix, data.firstName, data.lastName].filter(Boolean).join(' ');
-  const addressLine = [data.addressDetail, data.subdistrict, data.district, data.province]
-    .filter(Boolean).join(' ') + (data.postalCode ? ' ' + data.postalCode : '');
 
   return '' +
     '<div class="receipt-page">' +
@@ -348,7 +241,6 @@ function buildReceiptHtml(id, data) {
         '<div class="receipt-row"><span class="rlabel">เลขที่ใบอนุญาต</span><span class="rvalue">' + escapeHtml(data.licenseNo || '-') + '</span></div>' +
         '<div class="receipt-row"><span class="rlabel">วันที่ออกใบอนุญาต (พ.ศ.)</span><span class="rvalue">' + escapeHtml(data.issueDate || '-') + '</span></div>' +
         '<div class="receipt-row"><span class="rlabel">วันที่หมดอายุ (พ.ศ.)</span><span class="rvalue">' + escapeHtml(data.expiryDate || '-') + '</span></div>' +
-        '<div class="receipt-row"><span class="rlabel">ที่อยู่</span><span class="rvalue">' + escapeHtml(addressLine.trim() || '-') + '</span></div>' +
         '<div class="receipt-row"><span class="rlabel">โทรศัพท์</span><span class="rvalue">' + escapeHtml(data.phone || '-') + '</span></div>' +
         '<div class="receipt-row"><span class="rlabel">อีเมล</span><span class="rvalue">' + escapeHtml(data.email || '-') + '</span></div>' +
         '<div class="receipt-row"><span class="rlabel">สถานะคำร้อง</span><span class="rvalue">รอดำเนินการ</span></div>' +
@@ -381,11 +273,6 @@ newRequestBtn.addEventListener('click', () => {
   form.classList.remove('hidden');
   form.reset();
   prefixOtherField.style.display = 'none';
-  districtSelect.innerHTML = '<option value="">-- เลือกจังหวัดก่อน --</option>';
-  districtSelect.disabled = true;
-  subdistrictSelect.innerHTML = '<option value="">-- เลือกอำเภอ/เขตก่อน --</option>';
-  subdistrictSelect.disabled = true;
-  postalCodeInput.value = '';
   msgBox.className = 'msg';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
@@ -409,17 +296,6 @@ form.addEventListener('submit', async function (e) {
   // วันที่ออก/หมดอายุใบอนุญาต แบบ พ.ศ. (dd/mm/yyyy)
   data.issueDate = buildBEDate(issueDay, issueMonth, issueYear);
   data.expiryDate = buildBEDate(expiryDay, expiryMonth, expiryYear);
-
-  // ที่อยู่แบบเลือกจังหวัด/อำเภอ/ตำบล
-  data.province = provinceSelect.options[provinceSelect.selectedIndex]?.textContent || '';
-  data.district = districtSelect.options[districtSelect.selectedIndex]?.textContent || '';
-  data.subdistrict = subdistrictSelect.options[subdistrictSelect.selectedIndex]?.textContent || '';
-  data.postalCode = postalCodeInput.value || '';
-
-  if (!provinceSelect.value || !districtSelect.value || !subdistrictSelect.value) {
-    showMsg('กรุณาเลือก จังหวัด / อำเภอ / ตำบล ให้ครบถ้วน', false);
-    return;
-  }
 
   data.action = 'submit';
 
