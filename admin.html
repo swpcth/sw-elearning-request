@@ -21,10 +21,21 @@
   <!-- Search card -->
   <div class="card" id="searchCard">
     <h2>ค้นหาผู้ยื่นคำร้อง</h2>
+    <p style="font-size:13px; color:var(--muted); margin-top:-4px;">
+      กรอกได้มากกว่า 1 ช่อง ระบบจะกรองตามทุกช่องที่กรอกพร้อมกัน (ใช้ช่วยแยกกรณีชื่อซ้ำกัน)
+    </p>
     <div class="grid">
+      <div class="field">
+        <label>ชื่อ</label>
+        <input type="text" id="searchFirstName" placeholder="เช่น สมชาย">
+      </div>
+      <div class="field">
+        <label>นามสกุล</label>
+        <input type="text" id="searchLastName" placeholder="เช่น ใจดี">
+      </div>
       <div class="field full">
-        <label>ค้นหาจากชื่อ, นามสกุล หรือเลขที่ใบอนุญาต (พิมพ์บางส่วนก็ได้)</label>
-        <input type="text" id="searchInput" placeholder="เช่น สมชาย, ใจดี หรือ 0101">
+        <label>เลขที่ใบอนุญาต (พิมพ์บางส่วนก็ได้)</label>
+        <input type="text" id="searchLicense" placeholder="เช่น 0101">
       </div>
     </div>
     <div class="actions">
@@ -40,6 +51,7 @@
       <table id="resultsTable">
         <thead>
           <tr>
+            <th>เลขที่คำร้อง</th>
             <th>วันที่ยื่น</th>
             <th>ชื่อ-นามสกุล</th>
             <th>เลขประจำตัวประชาชน</th>
@@ -84,7 +96,9 @@
 <script>
 const searchCard = document.getElementById('searchCard');
 const resultsCard = document.getElementById('resultsCard');
-const searchInput = document.getElementById('searchInput');
+const searchFirstName = document.getElementById('searchFirstName');
+const searchLastName = document.getElementById('searchLastName');
+const searchLicense = document.getElementById('searchLicense');
 const searchBtn = document.getElementById('searchBtn');
 const searchMsg = document.getElementById('searchMsg');
 const resultsBody = document.getElementById('resultsBody');
@@ -105,6 +119,15 @@ function showMsg(el, text, ok) {
   el.className = 'msg show ' + (ok ? 'ok' : 'err');
 }
 
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function checkConfigured() {
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PASTE_YOUR') !== -1) {
     showMsg(searchMsg, 'ยังไม่ได้ตั้งค่า APPS_SCRIPT_URL ใน config.js', false);
@@ -123,16 +146,20 @@ async function callApi(payload) {
 }
 
 searchBtn.addEventListener('click', doSearch);
-searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
+[searchFirstName, searchLastName, searchLicense].forEach(el => {
+  el.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
+});
 
 async function doSearch() {
   if (!checkConfigured()) return;
-  const q = searchInput.value.trim();
+  const firstName = searchFirstName.value.trim();
+  const lastName = searchLastName.value.trim();
+  const license = searchLicense.value.trim();
   searchBtn.disabled = true;
   searchBtn.textContent = 'กำลังค้นหา...';
   detailPanel.classList.add('hidden');
   try {
-    const result = await callApi({ action: 'search', q });
+    const result = await callApi({ action: 'search', firstName, lastName, license });
     if (!result.success) {
       showMsg(searchMsg, result.error || 'ค้นหาไม่สำเร็จ', false);
       return;
@@ -163,10 +190,11 @@ function renderResults(items) {
     const tr = document.createElement('tr');
     tr.className = 'clickable';
     tr.innerHTML =
-      '<td>' + (item.timestamp || '') + '</td>' +
-      '<td>' + item.prefix + ' ' + item.firstName + ' ' + item.lastName + '</td>' +
-      '<td>' + (item.nationalId || '') + '</td>' +
-      '<td>' + (item.licenseNo || '') + '</td>' +
+      '<td><span class="req-id">' + escapeHtml(item.id) + '</span></td>' +
+      '<td>' + escapeHtml(item.timestamp) + '</td>' +
+      '<td>' + escapeHtml([item.prefix, item.firstName, item.lastName].filter(Boolean).join(' ')) + '</td>' +
+      '<td>' + escapeHtml(item.nationalId || '') + '</td>' +
+      '<td>' + escapeHtml(item.licenseNo || '') + '</td>' +
       '<td>' + statusBadge(item.status || 'รอดำเนินการ') + '</td>';
     tr.addEventListener('click', () => openDetail(item));
     resultsBody.appendChild(tr);
@@ -178,15 +206,15 @@ function openDetail(item) {
   const addressLine = [item.addressDetail, item.subdistrict, item.district, item.province]
     .filter(Boolean).join(' ') + (item.postalCode ? ' ' + item.postalCode : '');
   detailContent.innerHTML =
-    '<p><strong>เลขที่คำร้อง:</strong> <span class="req-id">' + item.id + '</span></p>' +
-    '<p><strong>ชื่อ-นามสกุล:</strong> ' + item.prefix + ' ' + item.firstName + ' ' + item.lastName + '</p>' +
-    '<p><strong>เลขประจำตัวประชาชน:</strong> ' + (item.nationalId || '-') + '</p>' +
-    '<p><strong>เลขที่ใบอนุญาต:</strong> ' + (item.licenseNo || '-') + '</p>' +
-    '<p><strong>วันที่ออกใบอนุญาต (พ.ศ.):</strong> ' + (item.issueDate || '-') + '</p>' +
-    '<p><strong>วันที่หมดอายุ (พ.ศ.):</strong> ' + (item.expiryDate || '-') + '</p>' +
-    '<p><strong>ที่อยู่:</strong> ' + (addressLine.trim() || '-') + '</p>' +
-    '<p><strong>โทรศัพท์ / อีเมล:</strong> ' + (item.phone || '-') + ' / ' + (item.email || '-') + '</p>' +
-    '<p><strong>วันที่ยื่นคำร้อง:</strong> ' + (item.timestamp || '-') + '</p>';
+    '<p><strong>เลขที่คำร้อง:</strong> <span class="req-id">' + escapeHtml(item.id) + '</span></p>' +
+    '<p><strong>ชื่อ-นามสกุล:</strong> ' + escapeHtml([item.prefix, item.firstName, item.lastName].filter(Boolean).join(' ')) + '</p>' +
+    '<p><strong>เลขประจำตัวประชาชน:</strong> ' + escapeHtml(item.nationalId || '-') + '</p>' +
+    '<p><strong>เลขที่ใบอนุญาต:</strong> ' + escapeHtml(item.licenseNo || '-') + '</p>' +
+    '<p><strong>วันที่ออกใบอนุญาต (พ.ศ.):</strong> ' + escapeHtml(item.issueDate || '-') + '</p>' +
+    '<p><strong>วันที่หมดอายุ (พ.ศ.):</strong> ' + escapeHtml(item.expiryDate || '-') + '</p>' +
+    '<p><strong>ที่อยู่:</strong> ' + escapeHtml(addressLine.trim() || '-') + '</p>' +
+    '<p><strong>โทรศัพท์ / อีเมล:</strong> ' + escapeHtml(item.phone || '-') + ' / ' + escapeHtml(item.email || '-') + '</p>' +
+    '<p><strong>วันที่ยื่นคำร้อง:</strong> ' + escapeHtml(item.timestamp || '-') + '</p>';
   statusSelect.value = item.status || 'รอดำเนินการ';
   staffNoteInput.value = item.staffNote || '';
   detailPanel.classList.remove('hidden');
