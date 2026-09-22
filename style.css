@@ -343,76 +343,92 @@ tr.clickable:hover { background: #f7f9fc; }
 
 .receipt-header {
   text-align: center;
-  margin-bottom: 18px;
+  margin-bottom: 6px;
+  border-bottom: 2px solid #000;
+  padding-bottom: 16px;
 }
 
 .receipt-header img {
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 60px;
   object-fit: contain;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .receipt-header h2 {
   margin: 0 0 4px;
-  font-size: 18px;
+  font-size: 19px;
+  letter-spacing: 0.3px;
 }
 
 .receipt-header p {
   margin: 0;
   font-size: 13px;
+  color: #333;
 }
 
 .receipt-id-box {
   text-align: center;
-  border: 1px dashed #000;
-  border-radius: 8px;
-  padding: 8px 16px;
-  margin: 16px auto;
-  max-width: 320px;
+  border: 1px solid #000;
+  border-radius: 4px;
+  padding: 10px 16px;
+  margin: 22px auto 26px;
+  max-width: 340px;
 }
 
 .receipt-id-box span {
   display: block;
   font-size: 12px;
+  letter-spacing: 0.5px;
 }
 
 .receipt-id-box strong {
-  font-family: monospace;
-  font-size: 20px;
+  font-family: "Sarabun", sans-serif;
+  font-size: 21px;
+  letter-spacing: 1px;
 }
 
-.receipt-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  margin-top: 10px;
+.receipt-fields {
+  margin-top: 12px;
 }
 
-.receipt-table th, .receipt-table td {
-  border: 1px solid #666;
-  padding: 6px 10px;
-  text-align: left;
+.receipt-row {
+  display: flex;
+  gap: 18px;
+  padding: 9px 2px;
+  border-bottom: 1px solid #ccc;
+  font-size: 14px;
 }
 
-.receipt-table th {
-  width: 38%;
-  background: #f0f0f0;
+.receipt-row:last-child {
+  border-bottom: none;
+}
+
+.receipt-row .rlabel {
+  flex: 0 0 40%;
+  color: #444;
+}
+
+.receipt-row .rvalue {
+  flex: 1;
+  font-weight: 600;
 }
 
 .receipt-note {
   font-size: 12px;
-  margin-top: 14px;
+  color: #444;
+  margin-top: 20px;
+  font-style: italic;
 }
 
 .receipt-sign {
-  margin-top: 46px;
+  margin-top: 56px;
   text-align: right;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .receipt-sign .line {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 body.printing > *:not(#printReceipt) {
